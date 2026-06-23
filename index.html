@@ -595,8 +595,7 @@ function cardHTML(s){
       <div><div class="info-lbl">Thème</div><div class="info-val">${esc(r.theme)}</div></div></div>`:''}
      ${r.duree?`<div class="info-row"><div class="info-ico" style="background:#e0f2fe">⏱️</div>
       <div><div class="info-lbl">Durée</div><div class="info-val">${esc(r.duree)}</div></div></div>`:''}
-     ${r.statut==='benevole'?'<div class="info-row"><div class="info-ico" style="background:#dcfce7">🤝</div><div><div class="info-lbl">Statut</div><div class="info-val" style="font-weight:bold;color:#16a34a">Bénévole</div></div></div>':r.statut==='remunere'?'<div class="info-row"><div class="info-ico" style="background:#fef3c7">💶</div><div><div class="info-lbl">Statut</div><div class="info-val" style="font-weight:bold;color:#92400e">Souhaite être rémunéré</div></div></div>':''
-     }
+     ${afficherStatut(r.statut)}
      ${r.besoins?`<div class="info-row"><div class="info-ico" style="background:#f3e8ff">🔧</div>
       <div><div class="info-lbl">Besoins</div><div class="info-val">${esc(r.besoins)}</div></div></div>`:''}
      ${r.mail?`<div style="display:flex;align-items:center;gap:7px;margin-top:5px;flex-wrap:wrap">
@@ -663,6 +662,12 @@ function openRes(slotId){
   if(ex.statut) setStatut(ex.statut);
   document.getElementById('modal').style.display='flex';
   setTimeout(()=>document.getElementById('m-prenom').focus(),50);
+}
+
+function afficherStatut(s) {
+  if(s==='benevole') return '<div class="info-row"><div class="info-ico" style="background:#dcfce7">🤝</div><div><div class="info-lbl">Statut</div><div class="info-val" style="font-weight:bold;color:#16a34a">Bénévole</div></div></div>';
+  if(s==='remunere') return '<div class="info-row"><div class="info-ico" style="background:#fef3c7">💶</div><div><div class="info-lbl">Statut</div><div class="info-val" style="font-weight:bold;color:#92400e">Souhaite être rémunéré</div></div></div>';
+  return '';
 }
 
 var currentStatut = '';
