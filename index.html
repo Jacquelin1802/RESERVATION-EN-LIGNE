@@ -27,6 +27,12 @@ body{font-family:Arial,sans-serif;background:#f0f4f8;min-height:100vh}
 .fb.gr.on{border-color:#2d7a2d;background:#2d7a2d;color:#fff}
 .srch{padding:7px 14px;border:1.5px solid #d0d8e8;border-radius:16px;font-family:Arial;font-size:12px;outline:none;min-width:200px}
 .srch:focus{border-color:#2a5aae}
+/* Filtre mois */
+.month-filters{padding:8px 20px 10px;background:#f8faff;border-bottom:1px solid #e8eef8;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.month-filters h3{font-size:12px;font-weight:bold;color:#1a3a6e;margin-right:4px}
+.mfb{padding:5px 12px;border-radius:14px;border:1.5px solid #d0d8e8;background:#fff;cursor:pointer;font-family:Arial;font-size:11px;font-weight:bold;color:#555;transition:all .12s;white-space:nowrap}
+.mfb:hover{border-color:#1a3a6e;background:#f0f4ff}
+.mfb.on{border-color:#1a3a6e;background:#1a3a6e;color:#fff}
 /* Stats */
 .stats{display:flex;gap:10px;padding:12px 20px;flex-wrap:wrap}
 .stat{background:#fff;border-radius:10px;border:1px solid #e0e8f0;padding:10px 16px;text-align:center;min-width:85px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
@@ -127,6 +133,12 @@ body{font-family:Arial,sans-serif;background:#f0f4f8;min-height:100vh}
  <input class="srch" id="srch" placeholder="🔍 Date, nom, thème…" oninput="renderSlots()">
 </div>
 
+<!-- Filtre mois -->
+<div class="month-filters" id="month-filters">
+ <h3>Mois :</h3>
+ <button class="mfb on" id="mf-tous" onclick="setMonthFilter('tous')">📅 Tous les mois</button>
+</div>
+
 <!-- Stats -->
 <div class="stats" id="stats"></div>
 
@@ -188,14 +200,15 @@ body{font-family:Arial,sans-serif;background:#f0f4f8;min-height:100vh}
     <label>💶 Statut de l'intervention *</label>
     <div style="display:flex;gap:10px;margin-top:4px">
      <button type="button" id="btn-benevole" onclick="setStatut('benevole')"
-      style="flex:1;padding:10px;border-radius:10px;border:2px solid #d0d8e8;background:#fff;cursor:pointer;font-family:Arial;font-size:12px;font-weight:bold;color:#555">
+      style="flex:1;padding:10px;border-radius:10px;border:2px solid #d0d8e8;background:#fff;cursor:pointer;font-family:Arial;font-size:12px;font-weight:bold;color:#555;transition:all .15s">
       🤝 Bénévole
      </button>
      <button type="button" id="btn-remunere" onclick="setStatut('remunere')"
-      style="flex:1;padding:10px;border-radius:10px;border:2px solid #d0d8e8;background:#fff;cursor:pointer;font-family:Arial;font-size:12px;font-weight:bold;color:#555">
+      style="flex:1;padding:10px;border-radius:10px;border:2px solid #d0d8e8;background:#fff;cursor:pointer;font-family:Arial;font-size:12px;font-weight:bold;color:#555;transition:all .15s">
       💶 Souhaite être rémunéré
      </button>
     </div>
+
    </div>
   </div>
   <div class="mft">
@@ -214,7 +227,7 @@ body{font-family:Arial,sans-serif;background:#f0f4f8;min-height:100vh}
 // ══════════════════════════════════════════════
 //  CONFIGURATION
 // ══════════════════════════════════════════════
-const API_URL = 'https://script.google.com/macros/s/AKfycbx-fpVd0eYbLUVg0mcPERgrTaiF8mfNWxPFi-EALS7juBcwTecgXaY1xqiM3Sj5m1s8/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzPrlsEzh10sRCXyzTrr5jHxsGb6h5o9YeIMmLrwYlJBZ5_Eox6_WVbMpqtKb8ksE4m/exec';
 
 // Email de l'administrateur à notifier lors de chaque réservation
 const ADMIN_EMAIL = 'jacquelin.techer@ac-reunion.fr';
@@ -289,6 +302,7 @@ const ALL_SLOTS = [
 // ══════════════════════════════════════════════
 let reservations = {};
 let currentFilter = 'tous';
+let currentMonth = 'tous';
 let currentSlotId = null;
 let userName = localStorage.getItem('bts_nom') || '';
 let userPrenom = localStorage.getItem('bts_prenom') || '';
@@ -467,7 +481,6 @@ function loadLocal(){
 async function init(){
   setBadge('<span class="loader"></span> Chargement…','#fff');
   reservations = await apiGet();
-  console.log('Données chargées:', JSON.stringify(Object.values(reservations).slice(0,1)));
   saveLocal();
   renderAll();
   setBadge(API_URL!=='VOTRE_URL_APPS_SCRIPT_ICI'?'✅ Connecté':'💾 Mode local (configuration requise)',
@@ -499,7 +512,7 @@ function setBadge(html, color){
 // ══════════════════════════════════════════════
 //  RENDU
 // ══════════════════════════════════════════════
-function renderAll(){ renderStats(); renderSlots(); }
+function renderAll(){ buildMonthFilters(); renderStats(); renderSlots(); }
 
 function renderStats(){
   const total=ALL_SLOTS.length;
@@ -515,6 +528,39 @@ function renderStats(){
    <div class="stat"><div class="stat-n" style="color:#2E75B6">${n1}</div><div class="stat-l">1DIET jeudis</div></div>
    <div class="stat"><div class="stat-n" style="color:#2d7a2d">${n2}</div><div class="stat-l">2DIET mercredis</div></div>
    ${mine?`<div class="stat"><div class="stat-n" style="color:#7c3aed">${mine}</div><div class="stat-l">Mes réservations</div></div>`:''}`;
+}
+
+// Construire dynamiquement les boutons de mois à partir des créneaux
+function buildMonthFilters() {
+  const months = {};
+  ALL_SLOTS.forEach(s => {
+    // dateISO = "2026-09-17"
+    const parts = s.dateISO.split('-');
+    const key = parts[0] + '-' + parts[1]; // "2026-09"
+    const label = new Date(s.dateISO + 'T12:00:00').toLocaleDateString('fr-FR', {month:'long', year:'numeric'});
+    months[key] = label;
+  });
+  const container = document.getElementById('month-filters');
+  // Garder seulement le bouton "Tous"
+  container.innerHTML = '<h3>Mois :</h3><button class="mfb on" id="mf-tous" onclick="setMonthFilter(&quot;tous&quot;)">📅 Tous les mois</button>';
+  Object.keys(months).sort().forEach(key => {
+    const btn = document.createElement('button');
+    btn.className = 'mfb';
+    btn.id = 'mf-' + key;
+    btn.onclick = () => setMonthFilter(key);
+    // Capitaliser le label
+    const lbl = months[key];
+    btn.textContent = lbl.charAt(0).toUpperCase() + lbl.slice(1);
+    container.appendChild(btn);
+  });
+}
+
+function setMonthFilter(m) {
+  currentMonth = m;
+  document.querySelectorAll('.mfb').forEach(b => b.classList.remove('on'));
+  const btn = document.getElementById('mf-' + m);
+  if(btn) btn.classList.add('on');
+  renderSlots();
 }
 
 function setFilter(f){
@@ -533,6 +579,10 @@ function renderSlots(){
     if(currentFilter==='2diet'&&s.classe!=='2DIET')return false;
     if(currentFilter==='libre'&&r)return false;
     if(currentFilter==='moi'&&(!r||r.nom.toLowerCase()!==me))return false;
+    if(currentMonth!=='tous'){
+      const ym=s.dateISO.slice(0,7);
+      if(ym!==currentMonth)return false;
+    }
     if(q){const t=[s.date,s.classe,r&&r.nom,r&&r.theme,r&&r.orga].filter(Boolean).join(' ').toLowerCase();if(!t.includes(q))return false;}
     return true;
   });
@@ -561,6 +611,19 @@ function confirmMailLink(s, r) {
   return 'mailto:jacquelin.techer@ac-reunion.fr?subject=' + subject + '&body=' + body;
 }
 
+function renderStatut(statut) {
+  if(!statut) return '';
+  // Normaliser la valeur (trim + lowercase) au cas où elle viendrait du serveur avec des espaces
+  var s = String(statut).trim().toLowerCase();
+  var bg = s==='benevole' ? '#dcfce7' : '#fef3c7';
+  var ico = s==='benevole' ? '🤝' : '💶';
+  var color = s==='benevole' ? '#16a34a' : '#92400e';
+  var label = s==='benevole' ? 'Bénévole' : 'Souhaite être rémunéré';
+  return '<div class="info-row"><div class="info-ico" style="background:'+bg+'">'+ico+'</div>'
+    +'<div><div class="info-lbl">Statut</div>'
+    +'<div class="info-val" style="font-weight:bold;color:'+color+'">'+label+'</div></div></div>';
+}
+
 function cardHTML(s){
   const r=reservations[s.id];
   const me=getFullName().toLowerCase();
@@ -586,28 +649,18 @@ function cardHTML(s){
   if(!r){
     body=locationBlock+`<div class="free-msg">Créneau disponible<br><span style="font-size:10px;color:#aaa">Cliquez "Réserver" pour vous inscrire</span></div>`;
   }else{
-    body=`
-     <div class="info-row"><div class="info-ico" style="background:#fee2e2">👤</div>
-      <div><div class="info-lbl">Intervenant</div>
-      <div class="info-val" style="font-weight:bold">${esc(r.nom)}</div>
-      ${r.orga?`<div style="font-size:11px;color:#666;margin-top:1px">${esc(r.orga)}</div>`:''}
-      </div></div>
-     `+locationBlock+`${r.theme?`<div class="info-row"><div class="info-ico" style="background:#fef3c7">💡</div>
-      <div><div class="info-lbl">Thème</div><div class="info-val">${esc(r.theme)}</div></div></div>`:''}
-     ${r.duree?`<div class="info-row"><div class="info-ico" style="background:#e0f2fe">⏱️</div>
-      <div><div class="info-lbl">Durée</div><div class="info-val">${esc(r.duree)}</div></div></div>`:''}
-     ${afficherStatut(r.statut)}
-     ${r.besoins?`<div class="info-row"><div class="info-ico" style="background:#f3e8ff">🔧</div>
-      <div><div class="info-lbl">Besoins</div><div class="info-val">${esc(r.besoins)}</div></div></div>`:''}
-     ${r.mail?`<div style="display:flex;align-items:center;gap:7px;margin-top:5px;flex-wrap:wrap">
-      <span style="font-size:11px;color:#555">📧 ${esc(r.mail)}</span>
-      <a href="mailto:${esc(r.mail)}" style="background:#1a3a8a;color:#fff;padding:3px 10px;border-radius:8px;font-size:10px;font-weight:bold;text-decoration:none">✉️ Mail</a>
-     </div>`:''}
-     <div style="margin-top:10px;padding-top:10px;border-top:1px dashed #e0e8f0">
-      <a href="${confirmMailLink(s,r)}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#fff8e1;color:#92400e;border:1px solid #f59e0b;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:bold;text-decoration:none">
-       📩 Confirmer mon intervention à l'enseignant
-      </a>
-     </div>`;
+    var parts=[];
+    parts.push('<div class="info-row"><div class="info-ico" style="background:#fee2e2">&#128100;</div><div><div class="info-lbl">Intervenant</div><div class="info-val" style="font-weight:bold">'+esc(r.nom)+'</div>');
+    if(r.orga) parts.push('<div style="font-size:11px;color:#666;margin-top:1px">'+esc(r.orga)+'</div>');
+    parts.push('</div></div>');
+    parts.push(locationBlock);
+    if(r.theme) parts.push('<div class="info-row"><div class="info-ico" style="background:#fef3c7">&#128161;</div><div><div class="info-lbl">Th&#232;me</div><div class="info-val">'+esc(r.theme)+'</div></div></div>');
+    if(r.duree) parts.push('<div class="info-row"><div class="info-ico" style="background:#e0f2fe">&#9201;</div><div><div class="info-lbl">Dur&#233;e</div><div class="info-val">'+esc(r.duree)+'</div></div></div>');
+    parts.push(renderStatut(r.statut));
+    if(r.besoins) parts.push('<div class="info-row"><div class="info-ico" style="background:#f3e8ff">&#128295;</div><div><div class="info-lbl">Besoins</div><div class="info-val">'+esc(r.besoins)+'</div></div></div>');
+    if(r.mail) parts.push('<div style="display:flex;align-items:center;gap:7px;margin-top:5px"><span style="font-size:11px;color:#555">'+esc(r.mail)+'</span><a href="mailto:'+esc(r.mail)+'" style="background:#1a3a8a;color:#fff;padding:3px 10px;border-radius:8px;font-size:10px;font-weight:bold;text-decoration:none">Mail</a></div>');
+    parts.push('<div style="margin-top:10px;padding-top:10px;border-top:1px dashed #e0e8f0"><a href="'+confirmMailLink(s,r)+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#fff8e1;color:#92400e;border:1px solid #f59e0b;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:bold;text-decoration:none">Confirmer mon intervention</a></div>');
+    body=parts.join('');
   }
 
   let ft='';
@@ -660,24 +713,20 @@ function openRes(slotId){
   document.getElementById('m-besoins').value=ex.besoins||'';
   document.getElementById('m-duree').value=ex.duree||'';
   resetStatut();
+  // Pré-sélectionner si déjà renseigné
   if(ex.statut) setStatut(ex.statut);
   document.getElementById('modal').style.display='flex';
   setTimeout(()=>document.getElementById('m-prenom').focus(),50);
 }
 
-function afficherStatut(s) {
-  if(s==='benevole') return '<div class="info-row"><div class="info-ico" style="background:#dcfce7">🤝</div><div><div class="info-lbl">Statut</div><div class="info-val" style="font-weight:bold;color:#16a34a">Bénévole</div></div></div>';
-  if(s==='remunere') return '<div class="info-row"><div class="info-ico" style="background:#fef3c7">💶</div><div><div class="info-lbl">Statut</div><div class="info-val" style="font-weight:bold;color:#92400e">Souhaite être rémunéré</div></div></div>';
-  return '';
-}
-
-var currentStatut = '';
+// Variable globale pour le statut
+let currentStatut = '';
 
 function setStatut(val) {
   currentStatut = val;
-  var btnB = document.getElementById('btn-benevole');
-  var btnR = document.getElementById('btn-remunere');
-  if (!btnB || !btnR) return;
+  const btnB = document.getElementById('btn-benevole');
+  const btnR = document.getElementById('btn-remunere');
+  if(!btnB || !btnR) return;
   if (val === 'benevole') {
     btnB.style.background='#dcfce7'; btnB.style.borderColor='#16a34a'; btnB.style.color='#16a34a';
     btnR.style.background='#fff'; btnR.style.borderColor='#d0d8e8'; btnR.style.color='#555';
@@ -687,12 +736,16 @@ function setStatut(val) {
   }
 }
 
+function getStatut() {
+  return currentStatut;
+}
+
 function resetStatut() {
   currentStatut = '';
-  var btnB = document.getElementById('btn-benevole');
-  var btnR = document.getElementById('btn-remunere');
-  if (btnB) { btnB.style.background='#fff'; btnB.style.borderColor='#d0d8e8'; btnB.style.color='#555'; }
-  if (btnR) { btnR.style.background='#fff'; btnR.style.borderColor='#d0d8e8'; btnR.style.color='#555'; }
+  const btnB = document.getElementById('btn-benevole');
+  const btnR = document.getElementById('btn-remunere');
+  if(btnB){btnB.style.background='#fff';btnB.style.borderColor='#d0d8e8';btnB.style.color='#555';}
+  if(btnR){btnR.style.background='#fff';btnR.style.borderColor='#d0d8e8';btnR.style.color='#555';}
 }
 
 function closeModal(){document.getElementById('modal').style.display='none';currentSlotId=null;}
@@ -703,12 +756,11 @@ async function confirmReservation(){
   const nom=(prenom+' '+nomSeul).trim();
   const theme=(document.getElementById('m-theme').value||'').trim();
   const duree=(document.getElementById('m-duree').value||'').trim();
-  const statut=currentStatut;
+  const statut=getStatut();
   if(!nom){showToast('⚠️ Votre nom est obligatoire.');return;}
   if(!theme){showToast('⚠️ Le thème est obligatoire.');return;}
-  if(!duree){showToast('⚠️ Veuillez choisir une durée.');return;}
-  if(!statut){showToast('⚠️ Veuillez choisir Bénévole ou Rémunéré.');return;}
-  if(false){showToast('⚠️ Veuillez choisir une durée d\'intervention.');return;}
+  if(!duree){showToast('⚠️ Veuillez choisir une durée d\'intervention.');return;}
+  if(!statut){showToast('⚠️ Veuillez choisir votre statut : Bénévole ou Rémunéré.');return;}
 
   const ex=reservations[currentSlotId];
   const me=getFullName().toLowerCase();
@@ -728,7 +780,7 @@ async function confirmReservation(){
     tel:(document.getElementById('m-tel').value||'').trim(),
     besoins:(document.getElementById('m-besoins').value||'').trim(),
     duree,
-    statut:statut,
+    statut,
     ts:Date.now(),
     dateSlot: slot.date||''
   };
@@ -749,6 +801,17 @@ async function confirmReservation(){
   // Notification admin par mail
   sendNotificationAdmin(slot, data, 'reservation');
 
+  // Recharger depuis le serveur pour garantir la sync complète
+  const fresh = await apiGet();
+  if(fresh && Object.keys(fresh).length >= 0) {
+    reservations = fresh;
+    saveLocal();
+  }
+  // Recharger depuis serveur pour sync complète
+  try {
+    const fresh = await apiGet();
+    if(fresh && typeof fresh === 'object') { reservations = fresh; saveLocal(); }
+  } catch(e) {}
   closeModal();renderAll();
   showToast('✅ Créneau réservé ! Un mail de notification a été préparé.',3000);
 }
