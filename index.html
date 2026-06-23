@@ -611,6 +611,17 @@ function confirmMailLink(s, r) {
   return 'mailto:jacquelin.techer@ac-reunion.fr?subject=' + subject + '&body=' + body;
 }
 
+function renderStatut(statut) {
+  if(!statut) return '';
+  var bg = statut==='benevole' ? '#dcfce7' : '#fef3c7';
+  var ico = statut==='benevole' ? '🤝' : '💶';
+  var color = statut==='benevole' ? '#16a34a' : '#92400e';
+  var label = statut==='benevole' ? 'Bénévole' : 'Souhaite être rémunéré';
+  return '<div class="info-row"><div class="info-ico" style="background:'+bg+'">'+ico+'</div>'
+    +'<div><div class="info-lbl">Statut</div>'
+    +'<div class="info-val" style="font-weight:bold;color:'+color+'">'+label+'</div></div></div>';
+}
+
 function cardHTML(s){
   const r=reservations[s.id];
   const me=getFullName().toLowerCase();
@@ -646,12 +657,7 @@ function cardHTML(s){
       <div><div class="info-lbl">Thème</div><div class="info-val">${esc(r.theme)}</div></div></div>`:''}
      ${r.duree?`<div class="info-row"><div class="info-ico" style="background:#e0f2fe">⏱️</div>
       <div><div class="info-lbl">Durée</div><div class="info-val">${esc(r.duree)}</div></div></div>`:''}
-     ${r.statut?`<div class="info-row">
-      <div class="info-ico" style="background:${r.statut==='benevole'?'#dcfce7':'#fef3c7'}">${r.statut==='benevole'?'🤝':'💶'}</div>
-      <div><div class="info-lbl">Statut</div>
-      <div class="info-val" style="font-weight:bold;color:${r.statut==='benevole'?'#16a34a':'#92400e'}">
-       ${r.statut==='benevole'?'Bénévole':'Souhaite être rémunéré'}
-      </div></div></div>`:''}
+     ${renderStatut(r.statut)}
      ${r.besoins?`<div class="info-row"><div class="info-ico" style="background:#f3e8ff">🔧</div>
       <div><div class="info-lbl">Besoins</div><div class="info-val">${esc(r.besoins)}</div></div></div>`:''}
      ${r.mail?`<div style="display:flex;align-items:center;gap:7px;margin-top:5px;flex-wrap:wrap">
