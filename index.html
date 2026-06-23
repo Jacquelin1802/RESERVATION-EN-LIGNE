@@ -467,6 +467,7 @@ function loadLocal(){
 async function init(){
   setBadge('<span class="loader"></span> Chargement…','#fff');
   reservations = await apiGet();
+  console.log('Données chargées:', JSON.stringify(Object.values(reservations).slice(0,1)));
   saveLocal();
   renderAll();
   setBadge(API_URL!=='VOTRE_URL_APPS_SCRIPT_ICI'?'✅ Connecté':'💾 Mode local (configuration requise)',
