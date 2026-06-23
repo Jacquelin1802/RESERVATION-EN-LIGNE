@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Planning Intervenants — BTS Diététique 2026-2027</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f0f4f8;min-height:100vh}
+.hdr{background:linear-gradient(135deg,#1a3a6e,#2a5aae);color:#fff;padding:18px 24px;display:flex;align-items:center;gap:16px;box-shadow:0 3px 12px rgba(0,0,0,.25)}
+.hdr-ico{font-size:36px}.hdr h1{font-size:18px;font-weight:bold;letter-spacing:.3px}.hdr p{font-size:12px;opacity:.88;margin-top:4px}
+.hdr-right{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.sync-badge{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:14px;font-size:11px;font-weight:bold}
+/* Setup panel */
+.setup-panel{background:#fff8e1;border-left:4px solid #f59e0b;padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.setup-label{font-family:Arial;font-size:12px;color:#78350f;font-weight:bold}
+.setup-input{padding:7px 12px;border:2px solid #f59e0b;border-radius:8px;font-family:Arial;font-size:13px;font-weight:bold;color:#1a3a6e;outline:none;min-width:220px}
+.setup-input:focus{border-color:#2a5aae}
+.setup-status{font-size:11px;font-weight:bold;color:#16a34a}
+.info-bar{background:#eff6ff;border-left:4px solid #3b82f6;padding:10px 18px;font-size:12px;color:#1e40af;display:flex;align-items:center;gap:8px}
+/* Filtres */
+.filters{padding:12px 20px;background:#fff;border-bottom:1px solid #e8eef8;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.filters h3{font-size:12px;font-weight:bold;color:#1a3a6e}
+.fb{padding:6px 14px;border-radius:16px;border:1.5px solid #d0d8e8;background:#fff;cursor:pointer;font-family:Arial;font-size:12px;font-weight:bold;color:#555;transition:all .12s}
+.fb.on,.fb:hover{border-color:#1a3a6e;background:#1a3a6e;color:#fff}
+.fb.bl.on{border-color:#2E75B6;background:#2E75B6;color:#fff}
+.fb.gr.on{border-color:#2d7a2d;background:#2d7a2d;color:#fff}
+.srch{padding:7px 14px;border:1.5px solid #d0d8e8;border-radius:16px;font-family:Arial;font-size:12px;outline:none;min-width:200px}
+.srch:focus{border-color:#2a5aae}
+/* Filtre mois */
+.month-filters{padding:8px 20px 10px;background:#f8faff;border-bottom:1px solid #e8eef8;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.month-filters h3{font-size:12px;font-weight:bold;color:#1a3a6e;margin-right:4px}
+.mfb{padding:5px 12px;border-radius:14px;border:1.5px solid #d0d8e8;background:#fff;cursor:pointer;font-family:Arial;font-size:11px;font-weight:bold;color:#555;transition:all .12s;white-space:nowrap}
+.mfb:hover{border-color:#1a3a6e;background:#f0f4ff}
+.mfb.on{border-color:#1a3a6e;background:#1a3a6e;color:#fff}
+/* Stats */
+.stats{display:flex;gap:10px;padding:12px 20px;flex-wrap:wrap}
+.stat{background:#fff;border-radius:10px;border:1px solid #e0e8f0;padding:10px 16px;text-align:center;min-width:85px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.stat-n{font-size:20px;font-weight:bold}.stat-l{font-size:10px;color:#6a8a9a;margin-top:2px}
+/* Grille */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(295px,1fr));gap:12px;padding:0 20px 30px}
+/* Carte */
+.slot-card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07);border:1.5px solid #e0e8f0;transition:box-shadow .13s}
+.slot-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.13)}
+.slot-card.taken{border-color:#dc2626;box-shadow:0 2px 10px rgba(220,38,38,0.25)}
+.slot-card.mine{border-color:#86efac;background:#f0fdf4}
+.slot-hd{padding:12px 14px;display:flex;align-items:center;justify-content:space-between}
+.hd1{background:linear-gradient(135deg,#1e3a5f,#2E75B6)}
+.hd2{background:linear-gradient(135deg,#1a3a1a,#2d7a2d)}
+.hd-taken{background:linear-gradient(135deg,#7f1d1d,#dc2626)}
+.slot-date{color:#fff;font-size:13px;font-weight:bold;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+.slot-cr{color:rgba(255,255,255,.85);font-size:10px;margin-top:3px}
+.cls-bdg{background:rgba(255,255,255,.22);color:#fff;padding:2px 8px;border-radius:9px;font-size:10px;font-weight:bold}
+.st-bdg{padding:2px 8px;border-radius:9px;font-size:10px;font-weight:bold;display:inline-flex;align-items:center;gap:3px;margin-top:3px}
+.st-libre{background:rgba(220,252,231,.9);color:#16a34a}
+.st-pris{background:rgba(254,226,226,.9);color:#b91c1c}
+.st-moi{background:rgba(219,234,254,.9);color:#1d4ed8}
+.slot-body{padding:12px 14px}
+.free-msg{text-align:center;padding:14px 0;color:#aaa;font-size:12px;font-style:italic}
+.info-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:7px}
+.info-ico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.info-lbl{font-size:10px;color:#8a9a8a;font-weight:bold;text-transform:uppercase;letter-spacing:.3px}
+.info-val{font-size:12px;color:#1e1e1e;margin-top:1px}
+.slot-ft{padding:8px 12px 10px;border-top:1px solid #f0f0f0;display:flex;gap:6px;flex-wrap:wrap}
+.btn-ok{flex:1;background:#1a3a6e;color:#fff;border:none;padding:7px;border-radius:8px;cursor:pointer;font-family:Arial;font-size:11px;font-weight:bold}
+.btn-ok:hover{background:#2a5aae}
+.btn-lib{flex:1;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;padding:7px;border-radius:8px;cursor:pointer;font-family:Arial;font-size:11px;font-weight:bold}
+.btn-edit{flex:1;background:#f0f4ff;color:#1a3a8a;border:1px solid #c0d0f0;padding:7px;border-radius:8px;cursor:pointer;font-family:Arial;font-size:11px;font-weight:bold}
+.btn-ack{flex:1;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;padding:7px;border-radius:8px;cursor:pointer;font-family:Arial;font-size:11px;font-weight:bold}
+.btn-ack:hover{background:#dcfce7}
+.btn-locked{flex:1;background:#f5f5f5;color:#999;border:1px solid #e0e0e0;padding:7px;border-radius:8px;font-family:Arial;font-size:11px;cursor:default}
+.frow select{width:100%;padding:8px 11px;border:1.5px solid #b0c8d0;border-radius:6px;font-family:Arial;font-size:12px;outline:none;background:#fff;cursor:pointer}
+.frow select:focus{border-color:#2a5aae}
+.btn-confirm-mail{background:#e8f5e9;color:#1a6e2a;border:1px solid #86efac;padding:8px 14px;border-radius:8px;cursor:pointer;font-family:Arial;font-size:12px;font-weight:bold;display:flex;align-items:center;gap:6px;text-decoration:none}
+.btn-confirm-mail:hover{background:#d4edda}
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:10px;animation:fi .15s}
+.modal{background:#fff;border-radius:14px;width:480px;max-width:96vw;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.28);animation:pi .18s ease}
+.mhd{padding:16px 20px;color:#fff;font-size:14px;font-weight:bold;display:flex;align-items:center;gap:8px}
+.mbody{padding:16px 20px;max-height:72vh;overflow-y:auto}
+.mft{padding:10px 20px 16px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid #f0f4f0}
+.frow{margin-bottom:11px}
+.frow label{display:block;font-size:11px;font-weight:bold;color:#3a4a3a;margin-bottom:3px}
+.frow input,.frow textarea{width:100%;padding:8px 11px;border:1.5px solid #b0c8d0;border-radius:6px;font-family:Arial;font-size:12px;outline:none}
+.frow input:focus,.frow textarea:focus{border-color:#2a5aae}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn-cancel{background:#f5f5f5;color:#555;border:1px solid #ddd;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:Arial;font-size:12px}
+.btn-save{background:#1a3a6e;color:#fff;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:Arial;font-size:12px;font-weight:bold}
+.btn-save:hover{background:#2a5aae}
+.slot-info-box{background:#f0f6ff;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-family:Arial;font-size:12px;color:#1a3a6e;font-weight:bold;border-left:3px solid #2a5aae}
+/* Loader */
+.loader{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;padding:10px 22px;border-radius:20px;font-family:Arial;font-size:13px;z-index:999;animation:fi .2s;box-shadow:0 4px 16px rgba(0,0,0,.3);white-space:nowrap}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+@keyframes pi{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+ <div class="hdr-ico">🏥</div>
+ <div>
+  <h1>Planning des Interventions — BTS Diététique 2026-2027</h1>
+  <p>Réservation des créneaux d'intervenants extérieurs · Mise à jour automatique</p>
+ </div>
+ <div class="hdr-right">
+  <div class="sync-badge" id="sync-badge">🔄 Connexion…</div>
+ </div>
+</div>
+
+<!-- Saisie du nom -->
+<div class="setup-panel">
+ <span class="setup-label">👤 Votre nom complet :</span>
+ <input class="setup-input" id="user-name" type="text" placeholder="Prénom NOM" maxlength="60" autocomplete="name">
+ <span class="setup-status" id="name-ok"></span>
+ <span style="font-size:11px;color:#92400e;margin-left:4px">⚠️ Obligatoire pour réserver</span>
+</div>
+
+<div class="info-bar">
+ ℹ️ Les réservations sont <strong>visibles par tous en temps réel</strong>. Un créneau pris ne peut pas être réservé par quelqu'un d'autre. Vos données sont synchronisées automatiquement.
+</div>
+
+<!-- Filtres -->
+<div class="filters">
+ <h3>Afficher :</h3>
+ <button class="fb on" id="f-tous" onclick="setFilter('tous')">📋 Tous</button>
+ <button class="fb bl" id="f-1diet" onclick="setFilter('1diet')">🔵 1DIET — Jeudi PM</button>
+ <button class="fb gr" id="f-2diet" onclick="setFilter('2diet')">🟢 2DIET — Mercredi PM</button>
+ <button class="fb" id="f-libre" onclick="setFilter('libre')">🟩 Disponibles</button>
+ <button class="fb" id="f-moi" onclick="setFilter('moi')">⭐ Mes réservations</button>
+ <input class="srch" id="srch" placeholder="🔍 Date, nom, thème…" oninput="renderSlots()">
+</div>
+
+<!-- Filtre mois -->
+<div class="month-filters" id="month-filters">
+ <h3>Mois :</h3>
+ <button class="mfb on" id="mf-tous" onclick="setMonthFilter('tous')">📅 Tous les mois</button>
+</div>
+
+<!-- Stats -->
+<div class="stats" id="stats"></div>
+
+<!-- Grille -->
+<div class="grid" id="grid">
+ <div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;font-family:Arial;font-size:13px">
+  <span class="loader" style="border-top-color:#2a5aae;border-color:#ddd"></span> Chargement des réservations…
+ </div>
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+ <div class="modal">
+  <div class="mhd" id="mhd" style="background:linear-gradient(135deg,#1a3a6e,#2a5aae)">📅 Réserver ce créneau</div>
+  <div class="mbody">
+   <div class="slot-info-box" id="m-slot-info"></div>
+   <div class="fgrid">
+    <div class="frow">
+     <label>👤 Votre prénom *</label>
+     <input type="text" id="m-prenom" placeholder="Marie">
+    </div>
+    <div class="frow">
+     <label>👤 Votre nom *</label>
+     <input type="text" id="m-nom" placeholder="DUPONT">
+    </div>
+   </div>
+   <div class="frow">
+    <label>🏢 Organisme / Structure</label>
+    <input type="text" id="m-orga" placeholder="CHU, association, entreprise…">
+   </div>
+   <div class="frow">
+    <label>💡 Thème de votre intervention *</label>
+    <input type="text" id="m-theme" placeholder="Nutrition, microbiote, allergies…">
+   </div>
+   <div class="fgrid">
+    <div class="frow">
+     <label>📧 Votre mail</label>
+     <input type="email" id="m-mail" placeholder="vous@mail.fr">
+    </div>
+    <div class="frow">
+     <label>📱 Téléphone</label>
+     <input type="tel" id="m-tel" placeholder="06 92 00 00 00">
+    </div>
+   </div>
+   <div class="frow">
+    <label>🔧 Besoins matériels</label>
+    <textarea id="m-besoins" rows="2" placeholder="Vidéoprojecteur, micro, fiches…"></textarea>
+   </div>
+   <div class="frow">
+    <label>⏱️ Durée de votre intervention *</label>
+    <select id="m-duree">
+     <option value="">— Choisissez une durée —</option>
+     <option value="2h">2 heures (minimum)</option>
+     <option value="3h">3 heures</option>
+     <option value="4h">4 heures</option>
+    </select>
+   </div>
+   <div class="frow">
+    <label>💶 Statut de l'intervention *</label>
+    <div style="display:flex;gap:10px;margin-top:4px">
+     <button type="button" id="btn-benevole" onclick="setStatut('benevole')"
+      style="flex:1;padding:10px;border-radius:10px;border:2px solid #d0d8e8;background:#fff;cursor:pointer;font-family:Arial;font-size:12px;font-weight:bold;color:#555;transition:all .15s">
+      🤝 Bénévole
+     </button>
+     <button type="button" id="btn-remunere" onclick="setStatut('remunere')"
+      style="flex:1;padding:10px;border-radius:10px;border:2px solid #d0d8e8;background:#fff;cursor:pointer;font-family:Arial;font-size:12px;font-weight:bold;color:#555;transition:all .15s">
+      💶 Souhaite être rémunéré
+     </button>
+    </div>
+
+   </div>
+  </div>
+  <div class="mft">
+   <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+   <button class="btn-save" id="btn-confirm" onclick="confirmReservation()">✅ Confirmer ma réservation</button>
+  </div>
+ </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  CONFIGURATION
+// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+//  CONFIGURATION
+// ══════════════════════════════════════════════
+const API_URL = 'https://script.google.com/macros/s/AKfycbzn-viHlp3iYsgmCGE7Sg8l6TTpH9Rn3w6mgNjnP3i5zj3Eat3UvJ4SV0qgifCEgt-p/exec';
+
+// Email de l'administrateur à notifier lors de chaque réservation
+const ADMIN_EMAIL = 'jacquelin.techer@ac-reunion.fr';
+
+// ══════════════════════════════════════════════
+//  CRÉNEAUX — Calendrier scolaire 2026-2027
+//  Règles appliquées :
+//  - 1DIET et 2DIET : démarrage semaine 3 de septembre (≥ 15/09/2026)
+//  - Jours fériés supprimés
+//  - 2DIET : 17/03/2027 supprimé (vacances)
+//  - 2DIET : aucune date après le 18/05/2027
+//  - 1DIET : aucune date après le 27/05/2027
+//  - 1DIET : 20/05/2027 supprimé (Ascension)
+// ══════════════════════════════════════════════
+const ALL_SLOTS = [
+  // ── 1DIET (Jeudis après-midi) ──
+  {"id":"j20260917","date":"17/09/2026","dateISO":"2026-09-17","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20260924","date":"24/09/2026","dateISO":"2026-09-24","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20261001","date":"01/10/2026","dateISO":"2026-10-01","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20261008","date":"08/10/2026","dateISO":"2026-10-08","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20261015","date":"15/10/2026","dateISO":"2026-10-15","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20261105","date":"05/11/2026","dateISO":"2026-11-05","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20261112","date":"12/11/2026","dateISO":"2026-11-12","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20261119","date":"19/11/2026","dateISO":"2026-11-19","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20261126","date":"26/11/2026","dateISO":"2026-11-26","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20261203","date":"03/12/2026","dateISO":"2026-12-03","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20261210","date":"10/12/2026","dateISO":"2026-12-10","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20261217","date":"17/12/2026","dateISO":"2026-12-17","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20270107","date":"07/01/2027","dateISO":"2027-01-07","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20270114","date":"14/01/2027","dateISO":"2027-01-14","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20270121","date":"21/01/2027","dateISO":"2027-01-21","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20270128","date":"28/01/2027","dateISO":"2027-01-28","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20270204","date":"04/02/2027","dateISO":"2027-02-04","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20270311","date":"11/03/2027","dateISO":"2027-03-11","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20270318","date":"18/03/2027","dateISO":"2027-03-18","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20270325","date":"25/03/2027","dateISO":"2027-03-25","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20270401","date":"01/04/2027","dateISO":"2027-04-01","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20270408","date":"08/04/2027","dateISO":"2027-04-08","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20270429","date":"29/04/2027","dateISO":"2027-04-29","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  {"id":"j20270506","date":"06/05/2027","dateISO":"2027-05-06","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+  // 13/05/2027 = Ascension → supprimé
+  {"id":"j20270527","date":"27/05/2027","dateISO":"2027-05-27","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
+
+  // ── 2DIET (Mercredis après-midi) ──
+  {"id":"m20260916","date":"16/09/2026","dateISO":"2026-09-16","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  {"id":"m20260923","date":"23/09/2026","dateISO":"2026-09-23","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  {"id":"m20260930","date":"30/09/2026","dateISO":"2026-09-30","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  {"id":"m20261007","date":"07/10/2026","dateISO":"2026-10-07","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  {"id":"m20261014","date":"14/10/2026","dateISO":"2026-10-14","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  {"id":"m20261104","date":"04/11/2026","dateISO":"2026-11-04","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  // 11/11/2026 = Armistice (mercredi) → supprimé
+  {"id":"m20261118","date":"18/11/2026","dateISO":"2026-11-18","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  {"id":"m20261216","date":"16/12/2026","dateISO":"2026-12-16","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  {"id":"m20270106","date":"06/01/2027","dateISO":"2027-01-06","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  {"id":"m20270113","date":"13/01/2027","dateISO":"2027-01-13","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  {"id":"m20270120","date":"20/01/2027","dateISO":"2027-01-20","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  {"id":"m20270127","date":"27/01/2027","dateISO":"2027-01-27","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  {"id":"m20270203","date":"03/02/2027","dateISO":"2027-02-03","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  {"id":"m20270210","date":"10/02/2027","dateISO":"2027-02-10","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  {"id":"m20270224","date":"24/02/2027","dateISO":"2027-02-24","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  {"id":"m20270303","date":"03/03/2027","dateISO":"2027-03-03","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  {"id":"m20270310","date":"10/03/2027","dateISO":"2027-03-10","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  // 17/03/2027 = vacances → supprimé
+  {"id":"m20270428","date":"28/04/2027","dateISO":"2027-04-28","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  {"id":"m20270505","date":"05/05/2027","dateISO":"2027-05-05","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"},
+  {"id":"m20270512","date":"12/05/2027","dateISO":"2027-05-12","jour":"Mercredi","classe":"2DIET","creneau":"13h30 – 17h30"}
+  // Pas d'interventions 2DIET après le 18/05/2027
+];
+
+// ══════════════════════════════════════════════
+//  ÉTAT
+// ══════════════════════════════════════════════
+let reservations = {};
+let currentFilter = 'tous';
+let currentMonth = 'tous';
+let currentSlotId = null;
+let userName = localStorage.getItem('bts_nom') || '';
+let userPrenom = localStorage.getItem('bts_prenom') || '';
+let syncInterval = null;
+
+// ── Nom utilisateur ──
+const nameInput = document.getElementById('user-name');
+nameInput.value = userPrenom && userName ? userPrenom+' '+userName : '';
+nameInput.addEventListener('input', function(){
+  const parts = this.value.trim().split(/\s+/);
+  userPrenom = parts[0] || '';
+  userName = parts.slice(1).join(' ') || '';
+  localStorage.setItem('bts_prenom', userPrenom);
+  localStorage.setItem('bts_nom', userName);
+  document.getElementById('name-ok').textContent = (userPrenom||userName) ? '✓ Identifié(e)' : '';
+  renderSlots();
+});
+if (userPrenom||userName) document.getElementById('name-ok').textContent = '✓ Identifié(e)';
+
+function getFullName(){ return (userPrenom+' '+userName).trim(); }
+
+// ══════════════════════════════════════════════
+//  NOTIFICATION MAIL ADMIN
+// ══════════════════════════════════════════════
+function sendNotificationAdmin(slot, data, type) {
+  // type: 'reservation' ou 'liberation'
+  if (!data.mail) return; // Pas d'envoi si pas de mail intervenant
+
+  const subject = type === 'reservation'
+    ? `[BTS Diététique] Nouvelle réservation — ${slot.classe} du ${slot.date}`
+    : `[BTS Diététique] Libération de créneau — ${slot.classe} du ${slot.date}`;
+
+  const body = type === 'reservation'
+    ? `Bonjour,\n\nUne nouvelle réservation a été effectuée :\n\n`
+      + `📅 Date : ${slot.date} (${slot.jour})\n`
+      + `⏰ Créneau : ${slot.creneau}\n`
+      + `👥 Classe : ${slot.classe}\n\n`
+      + `👤 Intervenant : ${data.nom}\n`
+      + `🏢 Organisme : ${data.orga || 'Non précisé'}\n`
+      + `💡 Thème : ${data.theme}\n`
+      + `⏱️ Durée : ${data.duree || 'Non précisée'}\n`
+      + `📧 Mail : ${data.mail || 'Non renseigné'}\n`
+      + `📱 Tél : ${data.tel || 'Non renseigné'}\n`
+      + `🔧 Besoins : ${data.besoins || 'Aucun'}\n\n`
+      + `Cordialement,\nPlanning BTS Diététique`
+    : `Bonjour,\n\nLe créneau suivant vient d'être libéré :\n\n`
+      + `📅 Date : ${slot.date} (${slot.jour})\n`
+      + `⏰ Créneau : ${slot.creneau}\n`
+      + `👥 Classe : ${slot.classe}\n\n`
+      + `Cordialement,\nPlanning BTS Diététique`;
+
+  // Ouvre le client mail de l'admin avec les infos pré-remplies
+  window.open(
+    `mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
+    '_blank'
+  );
+}
+
+// Accusé de réception à l'intervenant
+function sendAcknowledgement(slotId) {
+  const s = ALL_SLOTS.find(x => x.id === slotId);
+  const r = reservations[slotId];
+  if (!s || !r || !r.mail) {
+    showToast('⚠️ Aucun email renseigné pour cet intervenant.', 3000);
+    return;
+  }
+
+  const subject = `Confirmation de votre intervention — BTS Diététique ${s.classe} du ${s.date}`;
+  const body = `Bonjour ${r.prenom || r.nom},\n\n`
+    + `Nous avons bien reçu votre réservation et nous vous confirmons votre intervention dans le cadre du BTS Diététique :\n\n`
+    + `📅 Date : ${s.date} (${s.jour})\n`
+    + `⏰ Créneau : ${s.creneau}\n`
+    + `👥 Classe : ${s.classe}\n`
+    + `💡 Thème : ${r.theme}\n`
+    + `${r.besoins ? '🔧 Besoins matériels pris en compte : ' + r.besoins + '\n' : ''}\n`
+    + `N'hésitez pas à nous contacter pour toute question.\n\n`
+    + `Cordialement,\nL'équipe BTS Diététique`;
+
+  window.open(
+    `mailto:${esc(r.mail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
+    '_blank'
+  );
+  showToast('✉️ Client mail ouvert pour accusé de réception.', 2500);
+}
+
+// ══════════════════════════════════════════════
+//  API GOOGLE APPS SCRIPT
+// ══════════════════════════════════════════════
+// JSONP pour contourner le CORS sur mobile et tous navigateurs
+function jsonpGet() {
+  return new Promise((resolve) => {
+    const cbName = 'cb_' + Date.now();
+    const script = document.createElement('script');
+    window[cbName] = function(d) {
+      delete window[cbName];
+      document.body.removeChild(script);
+      if (d && d.success) resolve(d.data);
+      else { setBadge('📴 Hors ligne','#d97706'); resolve(loadLocal()); }
+    };
+    script.onerror = function() {
+      delete window[cbName];
+      try { document.body.removeChild(script); } catch(e) {}
+      setBadge('📴 Hors ligne — données locales','#d97706');
+      resolve(loadLocal());
+    };
+    script.src = API_URL + '?callback=' + cbName + '&t=' + Date.now();
+    document.body.appendChild(script);
+  });
+}
+
+function jsonpPost(action, slotId, data) {
+  return new Promise((resolve) => {
+    const cbName = 'cb_' + Date.now();
+    const script = document.createElement('script');
+    window[cbName] = function(d) {
+      delete window[cbName];
+      document.body.removeChild(script);
+      resolve(d && d.success);
+    };
+    script.onerror = function() {
+      delete window[cbName];
+      try { document.body.removeChild(script); } catch(e) {}
+      resolve(false);
+    };
+    const params = encodeURIComponent(JSON.stringify({action, slotId, data}));
+    script.src = API_URL + '?callback=' + cbName + '&payload=' + params + '&t=' + Date.now();
+    document.body.appendChild(script);
+  });
+}
+
+async function apiGet(){
+  if(API_URL === 'VOTRE_URL_APPS_SCRIPT_ICI') return loadLocal();
+  try {
+    // Essai fetch d'abord, fallback JSONP si CORS bloqué
+    const r = await fetch(API_URL + '?t=' + Date.now(), {method:'GET', mode:'cors'});
+    const d = await r.json();
+    if(d.success) return d.data;
+    throw new Error(d.error||'erreur');
+  } catch(e) {
+    // Fallback JSONP (mobile, CORS bloqué)
+    return await jsonpGet();
+  }
+}
+
+async function apiPost(action, slotId, data){
+  if(action==='save') reservations[slotId]=data;
+  else delete reservations[slotId];
+  saveLocal();
+
+  if(API_URL === 'VOTRE_URL_APPS_SCRIPT_ICI') return true;
+
+  try{
+    const r = await fetch(API_URL,{
+      method:'POST', mode:'cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action, slotId, data})
+    });
+    const d = await r.json();
+    if(d.success) return d;
+    if(d.error) return d;
+    throw new Error('erreur post');
+  }catch(e){
+    // Fallback JSONP pour mobile
+    return await jsonpPost(action, slotId, data);
+  }
+}
+
+function saveLocal(){
+  try{localStorage.setItem('bts_reservations', JSON.stringify(reservations));}catch(e){}
+}
+function loadLocal(){
+  try{const v=localStorage.getItem('bts_reservations');return v?JSON.parse(v):{};}catch(e){return {};}
+}
+
+// ── Chargement initial + sync auto ──
+async function init(){
+  setBadge('<span class="loader"></span> Chargement…','#fff');
+  reservations = await apiGet();
+  saveLocal();
+  renderAll();
+  setBadge(API_URL!=='VOTRE_URL_APPS_SCRIPT_ICI'?'✅ Connecté':'💾 Mode local (configuration requise)',
+           API_URL!=='VOTRE_URL_APPS_SCRIPT_ICI'?'#86efac':'#fde68a');
+
+  if(API_URL !== 'VOTRE_URL_APPS_SCRIPT_ICI'){
+    syncInterval = setInterval(async ()=>{
+      const remote = await apiGet();
+      let changed=false;
+      for(const id in remote){
+        if(!reservations[id]||remote[id].ts>reservations[id].ts){
+          reservations[id]=remote[id]; changed=true;
+        }
+      }
+      for(const id in reservations){
+        if(!remote[id]){delete reservations[id]; changed=true;}
+      }
+      if(changed){saveLocal();renderAll();}
+      setBadge('✅ Synchronisé à '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}),'#86efac');
+    }, 15000);
+  }
+}
+
+function setBadge(html, color){
+  const b=document.getElementById('sync-badge');
+  if(b){b.innerHTML=html; b.style.color=color||'#fff';}
+}
+
+// ══════════════════════════════════════════════
+//  RENDU
+// ══════════════════════════════════════════════
+function renderAll(){ buildMonthFilters(); renderStats(); renderSlots(); }
+
+function renderStats(){
+  const total=ALL_SLOTS.length;
+  const taken=Object.keys(reservations).length;
+  const libre=total-taken;
+  const n1=ALL_SLOTS.filter(s=>s.classe==='1DIET').length;
+  const n2=ALL_SLOTS.filter(s=>s.classe==='2DIET').length;
+  const mine=ALL_SLOTS.filter(s=>{const r=reservations[s.id];return r&&r.nom.toLowerCase()===getFullName().toLowerCase();}).length;
+  document.getElementById('stats').innerHTML=`
+   <div class="stat"><div class="stat-n" style="color:#1a3a6e">${total}</div><div class="stat-l">Total créneaux</div></div>
+   <div class="stat"><div class="stat-n" style="color:#16a34a">${libre}</div><div class="stat-l">Disponibles</div></div>
+   <div class="stat"><div class="stat-n" style="color:#dc2626">${taken}</div><div class="stat-l">Réservés</div></div>
+   <div class="stat"><div class="stat-n" style="color:#2E75B6">${n1}</div><div class="stat-l">1DIET jeudis</div></div>
+   <div class="stat"><div class="stat-n" style="color:#2d7a2d">${n2}</div><div class="stat-l">2DIET mercredis</div></div>
+   ${mine?`<div class="stat"><div class="stat-n" style="color:#7c3aed">${mine}</div><div class="stat-l">Mes réservations</div></div>`:''}`;
+}
+
+// Construire dynamiquement les boutons de mois à partir des créneaux
+function buildMonthFilters() {
+  const months = {};
+  ALL_SLOTS.forEach(s => {
+    // dateISO = "2026-09-17"
+    const parts = s.dateISO.split('-');
+    const key = parts[0] + '-' + parts[1]; // "2026-09"
+    const label = new Date(s.dateISO + 'T12:00:00').toLocaleDateString('fr-FR', {month:'long', year:'numeric'});
+    months[key] = label;
+  });
+  const container = document.getElementById('month-filters');
+  // Garder seulement le bouton "Tous"
+  container.innerHTML = '<h3>Mois :</h3><button class="mfb on" id="mf-tous" onclick="setMonthFilter(&quot;tous&quot;)">📅 Tous les mois</button>';
+  Object.keys(months).sort().forEach(key => {
+    const btn = document.createElement('button');
+    btn.className = 'mfb';
+    btn.id = 'mf-' + key;
+    btn.onclick = () => setMonthFilter(key);
+    // Capitaliser le label
+    const lbl = months[key];
+    btn.textContent = lbl.charAt(0).toUpperCase() + lbl.slice(1);
+    container.appendChild(btn);
+  });
+}
+
+function setMonthFilter(m) {
+  currentMonth = m;
+  document.querySelectorAll('.mfb').forEach(b => b.classList.remove('on'));
+  const btn = document.getElementById('mf-' + m);
+  if(btn) btn.classList.add('on');
+  renderSlots();
+}
+
+function setFilter(f){
+  currentFilter=f;
+  document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('f-'+f)?.classList.add('on');
+  renderSlots();
+}
+
+function renderSlots(){
+  const q=(document.getElementById('srch').value||'').toLowerCase();
+  const me=getFullName().toLowerCase();
+  const filtered=ALL_SLOTS.filter(s=>{
+    const r=reservations[s.id];
+    if(currentFilter==='1diet'&&s.classe!=='1DIET')return false;
+    if(currentFilter==='2diet'&&s.classe!=='2DIET')return false;
+    if(currentFilter==='libre'&&r)return false;
+    if(currentFilter==='moi'&&(!r||r.nom.toLowerCase()!==me))return false;
+    if(currentMonth!=='tous'){
+      const ym=s.dateISO.slice(0,7);
+      if(ym!==currentMonth)return false;
+    }
+    if(q){const t=[s.date,s.classe,r&&r.nom,r&&r.theme,r&&r.orga].filter(Boolean).join(' ').toLowerCase();if(!t.includes(q))return false;}
+    return true;
+  });
+  const grid=document.getElementById('grid');
+  grid.innerHTML=filtered.length?filtered.map(s=>cardHTML(s)).join(''):
+    '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;font-family:Arial;font-size:13px">Aucun créneau pour cette sélection.</div>';
+}
+
+// Génère le lien mailto pour qu'un intervenant confirme son intervention à l'enseignant
+function confirmMailLink(s, r) {
+  const subject = encodeURIComponent(
+    '[BTS Diététique] Confirmation intervention — ' + s.classe + ' du ' + s.date
+  );
+  const body = encodeURIComponent(
+    'Bonjour,\n\n'
+    + 'Je vous confirme ma participation en tant qu\'intervenant extérieur dans le cadre du BTS Diététique :\n\n'
+    + '\uD83D\uDCC5 Date : ' + s.date + ' (' + s.jour + ')\n'
+    + '\u23F0 Créneau : ' + s.creneau + '\n'
+    + '\uD83D\uDC65 Classe : ' + s.classe + '\n'
+    + '\uD83D\uDCA1 Thème : ' + (r.theme || 'Non précisé') + '\n'
+    + '\u23F1\uFE0F Durée prévue : ' + (r.duree || 'Non précisée') + '\n'
+    + (r.besoins ? '\uD83D\uDD27 Besoins matériels : ' + r.besoins + '\n' : '')
+    + '\nCordialement,\n'
+    + (r.nom || '')
+  );
+  return 'mailto:jacquelin.techer@ac-reunion.fr?subject=' + subject + '&body=' + body;
+}
+
+function cardHTML(s){
+  const r=reservations[s.id];
+  const me=getFullName().toLowerCase();
+  const isMine=r&&r.nom.toLowerCase()===me;
+  const is1=s.classe==='1DIET';
+  const cc=r?(isMine?'mine':'taken'):'';
+  const hd=r?(isMine?'hd-taken':'hd-taken'):(is1?'hd1':'hd2');
+  const stCls=r?(isMine?'st-moi':'st-pris'):'st-libre';
+  const stTxt=r?(isMine?'⭐ Vous':'🔒 Pris'):'🟢 Libre';
+
+  const locationBlock = `
+    <div style="background:#f0f6ff;border-radius:8px;padding:8px 12px;margin-bottom:9px;border-left:3px solid #2a5aae">
+      <div style="font-size:11px;font-weight:bold;color:#1a3a6e;margin-bottom:4px">📍 Lieu de l'intervention</div>
+      <div style="font-size:11px;color:#333;margin-bottom:2px">🏫 <strong>Salle I12 — Bâtiment I</strong></div>
+      <div style="font-size:11px;color:#333;margin-bottom:5px">🏛️ Lycée Marie Curie de Sainte-Anne<br>81 rue Roger Dijoux — 97470 Saint-Benoît</div>
+      <a href="https://www.google.com/maps/search/?api=1&query=81+rue+Roger+Dijoux+97470+Saint-Beno%C3%AEt+La+R%C3%A9union" target="_blank"
+         style="display:inline-flex;align-items:center;gap:4px;background:#1a73e8;color:#fff;padding:4px 10px;border-radius:7px;font-size:10px;font-weight:bold;text-decoration:none">
+        🗺️ Ouvrir dans Google Maps
+      </a>
+    </div>`;
+
+  let body='';
+  if(!r){
+    body=locationBlock+`<div class="free-msg">Créneau disponible<br><span style="font-size:10px;color:#aaa">Cliquez "Réserver" pour vous inscrire</span></div>`;
+  }else{
+    body=`
+     <div class="info-row"><div class="info-ico" style="background:#fee2e2">👤</div>
+      <div><div class="info-lbl">Intervenant</div>
+      <div class="info-val" style="font-weight:bold">${esc(r.nom)}</div>
+      ${r.orga?`<div style="font-size:11px;color:#666;margin-top:1px">${esc(r.orga)}</div>`:''}
+      </div></div>
+     `+locationBlock+`${r.theme?`<div class="info-row"><div class="info-ico" style="background:#fef3c7">💡</div>
+      <div><div class="info-lbl">Thème</div><div class="info-val">${esc(r.theme)}</div></div></div>`:''}
+     ${r.duree?`<div class="info-row"><div class="info-ico" style="background:#e0f2fe">⏱️</div>
+      <div><div class="info-lbl">Durée</div><div class="info-val">${esc(r.duree)}</div></div></div>`:''}
+     ${r.statut?`<div class="info-row">
+      <div class="info-ico" style="background:${r.statut==='benevole'?'#dcfce7':'#fef3c7'}">${r.statut==='benevole'?'🤝':'💶'}</div>
+      <div><div class="info-lbl">Statut</div>
+      <div class="info-val" style="font-weight:bold;color:${r.statut==='benevole'?'#16a34a':'#92400e'}">
+       ${r.statut==='benevole'?'Bénévole':'Souhaite être rémunéré'}
+      </div></div></div>`:''}
+     ${r.besoins?`<div class="info-row"><div class="info-ico" style="background:#f3e8ff">🔧</div>
+      <div><div class="info-lbl">Besoins</div><div class="info-val">${esc(r.besoins)}</div></div></div>`:''}
+     ${r.mail?`<div style="display:flex;align-items:center;gap:7px;margin-top:5px;flex-wrap:wrap">
+      <span style="font-size:11px;color:#555">📧 ${esc(r.mail)}</span>
+      <a href="mailto:${esc(r.mail)}" style="background:#1a3a8a;color:#fff;padding:3px 10px;border-radius:8px;font-size:10px;font-weight:bold;text-decoration:none">✉️ Mail</a>
+     </div>`:''}
+     <div style="margin-top:10px;padding-top:10px;border-top:1px dashed #e0e8f0">
+      <a href="${confirmMailLink(s,r)}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#fff8e1;color:#92400e;border:1px solid #f59e0b;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:bold;text-decoration:none">
+       📩 Confirmer mon intervention à l'enseignant
+      </a>
+     </div>`;
+  }
+
+  let ft='';
+  if(!r){
+    ft=`<button class="btn-ok" onclick="openRes('${s.id}')">✅ Réserver ce créneau</button>`;
+  }else if(isMine){
+    ft=`<button class="btn-edit" onclick="openRes('${s.id}')">✏️ Modifier</button>`
+      +`<button class="btn-lib" onclick="liberer('${s.id}')">🔓 Libérer</button>`;
+  }else{
+    // Créneau pris par quelqu'un d'autre : bouton accusé de réception si mail dispo
+    ft=`<button class="btn-locked">🔒 Réservé</button>`;
+    if(r.mail){
+      ft+=`<button class="btn-ack" onclick="sendAcknowledgement('${s.id}')">✉️ Accuser réception</button>`;
+    }
+  }
+
+  return`<div class="slot-card ${cc}">
+   <div class="slot-hd ${hd}">
+    <div><div class="slot-date">📅 ${esc(s.date)}</div><div class="slot-cr">⏰ ${esc(s.creneau)}</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.85);margin-top:3px">🏫 Salle I12 — Bât. I</div></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+     <span class="cls-bdg">${esc(s.classe)}</span>
+     <span class="st-bdg ${stCls}">${stTxt}</span>
+    </div>
+   </div>
+   <div class="slot-body">${body}</div>
+   <div class="slot-ft">${ft}</div>
+  </div>`;
+}
+
+// ── Réservation ──
+function openRes(slotId){
+  const name=getFullName();
+  if(!name){showToast('⚠️ Saisissez votre nom en haut de page avant de réserver.',3500);document.getElementById('user-name').focus();return;}
+  currentSlotId=slotId;
+  const s=ALL_SLOTS.find(x=>x.id===slotId);
+  const r=reservations[slotId];
+  const is1=s&&s.classe==='1DIET';
+  document.getElementById('mhd').style.background=is1?'linear-gradient(135deg,#1e3a5f,#2E75B6)':'linear-gradient(135deg,#1a3a1a,#2d7a2d)';
+  document.getElementById('mhd').textContent=(r?'✏️ Modifier votre réservation':'📅 Réserver ce créneau');
+  document.getElementById('m-slot-info').textContent='📅 '+s.date+' · ⏰ '+s.creneau+' · '+s.classe;
+  const ex=r||{};
+  const parts=(ex.nom||name).split(' ');
+  document.getElementById('m-prenom').value=ex.prenom||userPrenom||parts[0]||'';
+  document.getElementById('m-nom').value=ex.nomSeul||userName||parts.slice(1).join(' ')||'';
+  document.getElementById('m-orga').value=ex.orga||'';
+  document.getElementById('m-theme').value=ex.theme||'';
+  document.getElementById('m-mail').value=ex.mail||'';
+  document.getElementById('m-tel').value=ex.tel||'';
+  document.getElementById('m-besoins').value=ex.besoins||'';
+  document.getElementById('m-duree').value=ex.duree||'';
+  resetStatut();
+  // Pré-sélectionner si déjà renseigné
+  if(ex.statut) setStatut(ex.statut);
+  document.getElementById('modal').style.display='flex';
+  setTimeout(()=>document.getElementById('m-prenom').focus(),50);
+}
+
+function setStatut(val) {
+  const btnB = document.getElementById('btn-benevole');
+  const btnR = document.getElementById('btn-remunere');
+  if (val === 'benevole') {
+    btnB.style.background='#dcfce7'; btnB.style.borderColor='#16a34a'; btnB.style.color='#16a34a';
+    btnR.style.background='#fff'; btnR.style.borderColor='#d0d8e8'; btnR.style.color='#555';
+    note.style.display='none';
+  } else {
+    btnR.style.background='#fef3c7'; btnR.style.borderColor='#f59e0b'; btnR.style.color='#92400e';
+    btnB.style.background='#fff'; btnB.style.borderColor='#d0d8e8'; btnB.style.color='#555';
+  }
+  document.getElementById('btn-benevole').dataset.selected = (val==='benevole'?'1':'0');
+  document.getElementById('btn-remunere').dataset.selected = (val==='remunere'?'1':'0');
+}
+
+function getStatut() {
+  const btnR = document.getElementById('btn-remunere');
+  const btnB = document.getElementById('btn-benevole');
+  if (btnR && btnR.dataset.selected==='1') return 'remunere';
+  if (btnB && btnB.dataset.selected==='1') return 'benevole';
+  return '';
+}
+
+function resetStatut() {
+  const btnB = document.getElementById('btn-benevole');
+  const btnR = document.getElementById('btn-remunere');
+  const note = document.getElementById('statut-note');
+  if(btnB){btnB.style.background='#fff';btnB.style.borderColor='#d0d8e8';btnB.style.color='#555';btnB.dataset.selected='0';}
+  if(btnR){btnR.style.background='#fff';btnR.style.borderColor='#d0d8e8';btnR.style.color='#555';btnR.dataset.selected='0';}
+
+}
+
+function closeModal(){document.getElementById('modal').style.display='none';currentSlotId=null;}
+
+async function confirmReservation(){
+  const prenom=(document.getElementById('m-prenom').value||'').trim();
+  const nomSeul=(document.getElementById('m-nom').value||'').trim();
+  const nom=(prenom+' '+nomSeul).trim();
+  const theme=(document.getElementById('m-theme').value||'').trim();
+  const duree=(document.getElementById('m-duree').value||'').trim();
+  const statut=getStatut();
+  if(!nom){showToast('⚠️ Votre nom est obligatoire.');return;}
+  if(!theme){showToast('⚠️ Le thème est obligatoire.');return;}
+  if(!duree){showToast('⚠️ Veuillez choisir une durée d\'intervention.');return;}
+  if(!statut){showToast('⚠️ Veuillez choisir votre statut : Bénévole ou Rémunéré.');return;}
+
+  const ex=reservations[currentSlotId];
+  const me=getFullName().toLowerCase();
+  if(ex&&ex.nom.toLowerCase()!==me){
+    showToast('⛔ Ce créneau est déjà pris par '+ex.nom+' !',4000);return;
+  }
+
+  const btn=document.getElementById('btn-confirm');
+  btn.innerHTML='<span class="loader"></span> Enregistrement…';btn.disabled=true;
+
+  const slot = ALL_SLOTS.find(s=>s.id===currentSlotId)||{};
+  const data={
+    nom, prenom, nomSeul,
+    orga:(document.getElementById('m-orga').value||'').trim(),
+    theme,
+    mail:(document.getElementById('m-mail').value||'').trim(),
+    tel:(document.getElementById('m-tel').value||'').trim(),
+    besoins:(document.getElementById('m-besoins').value||'').trim(),
+    duree,
+    statut,
+    ts:Date.now(),
+    dateSlot: slot.date||''
+  };
+
+  const postResult = await apiPost('save', currentSlotId, data);
+
+  btn.innerHTML='✅ Confirmer ma réservation';btn.disabled=false;
+
+  if(postResult && postResult.error === 'ALREADY_TAKEN') {
+    // Recharger les données et afficher l'erreur
+    reservations = await apiGet();
+    saveLocal();
+    closeModal();renderAll();
+    showToast('⛔ Ce créneau vient d\'être pris par ' + postResult.by + ' ! Choisissez un autre créneau.', 5000);
+    return;
+  }
+
+  // Notification admin par mail
+  sendNotificationAdmin(slot, data, 'reservation');
+
+  closeModal();renderAll();
+  showToast('✅ Créneau réservé ! Un mail de notification a été préparé.',3000);
+}
+
+async function liberer(slotId){
+  const s=ALL_SLOTS.find(x=>x.id===slotId)||{};
+  if(!confirm('Libérer votre réservation du '+s.date+' ?'))return;
+  await apiPost('delete', slotId, {});
+  renderAll();showToast('🔓 Créneau libéré.');
+}
+
+// ── Utilitaires ──
+function showToast(msg,dur=2500){
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.getElementById('toasts').appendChild(t);setTimeout(()=>t.remove(),dur);
+}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ── Démarrage ──
+init();
+</script>
+</body>
+</html>
