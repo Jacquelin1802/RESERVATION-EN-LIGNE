@@ -647,28 +647,18 @@ function cardHTML(s){
   if(!r){
     body=locationBlock+`<div class="free-msg">Créneau disponible<br><span style="font-size:10px;color:#aaa">Cliquez "Réserver" pour vous inscrire</span></div>`;
   }else{
-    body=`
-     <div class="info-row"><div class="info-ico" style="background:#fee2e2">👤</div>
-      <div><div class="info-lbl">Intervenant</div>
-      <div class="info-val" style="font-weight:bold">${esc(r.nom)}</div>
-      ${r.orga?`<div style="font-size:11px;color:#666;margin-top:1px">${esc(r.orga)}</div>`:''}
-      </div></div>
-     `+locationBlock+`${r.theme?`<div class="info-row"><div class="info-ico" style="background:#fef3c7">💡</div>
-      <div><div class="info-lbl">Thème</div><div class="info-val">${esc(r.theme)}</div></div></div>`:''}
-     ${r.duree?`<div class="info-row"><div class="info-ico" style="background:#e0f2fe">⏱️</div>
-      <div><div class="info-lbl">Durée</div><div class="info-val">${esc(r.duree)}</div></div></div>`:''}
-     ${renderStatut(r.statut)}
-     ${r.besoins?`<div class="info-row"><div class="info-ico" style="background:#f3e8ff">🔧</div>
-      <div><div class="info-lbl">Besoins</div><div class="info-val">${esc(r.besoins)}</div></div></div>`:''}
-     ${r.mail?`<div style="display:flex;align-items:center;gap:7px;margin-top:5px;flex-wrap:wrap">
-      <span style="font-size:11px;color:#555">📧 ${esc(r.mail)}</span>
-      <a href="mailto:${esc(r.mail)}" style="background:#1a3a8a;color:#fff;padding:3px 10px;border-radius:8px;font-size:10px;font-weight:bold;text-decoration:none">✉️ Mail</a>
-     </div>`:''}
-     <div style="margin-top:10px;padding-top:10px;border-top:1px dashed #e0e8f0">
-      <a href="${confirmMailLink(s,r)}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#fff8e1;color:#92400e;border:1px solid #f59e0b;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:bold;text-decoration:none">
-       📩 Confirmer mon intervention à l'enseignant
-      </a>
-     </div>`;
+    var parts=[];
+    parts.push('<div class="info-row"><div class="info-ico" style="background:#fee2e2">&#128100;</div><div><div class="info-lbl">Intervenant</div><div class="info-val" style="font-weight:bold">'+esc(r.nom)+'</div>');
+    if(r.orga) parts.push('<div style="font-size:11px;color:#666;margin-top:1px">'+esc(r.orga)+'</div>');
+    parts.push('</div></div>');
+    parts.push(locationBlock);
+    if(r.theme) parts.push('<div class="info-row"><div class="info-ico" style="background:#fef3c7">&#128161;</div><div><div class="info-lbl">Th&#232;me</div><div class="info-val">'+esc(r.theme)+'</div></div></div>');
+    if(r.duree) parts.push('<div class="info-row"><div class="info-ico" style="background:#e0f2fe">&#9201;</div><div><div class="info-lbl">Dur&#233;e</div><div class="info-val">'+esc(r.duree)+'</div></div></div>');
+    parts.push(renderStatut(r.statut));
+    if(r.besoins) parts.push('<div class="info-row"><div class="info-ico" style="background:#f3e8ff">&#128295;</div><div><div class="info-lbl">Besoins</div><div class="info-val">'+esc(r.besoins)+'</div></div></div>');
+    if(r.mail) parts.push('<div style="display:flex;align-items:center;gap:7px;margin-top:5px"><span style="font-size:11px;color:#555">'+esc(r.mail)+'</span><a href="mailto:'+esc(r.mail)+'" style="background:#1a3a8a;color:#fff;padding:3px 10px;border-radius:8px;font-size:10px;font-weight:bold;text-decoration:none">Mail</a></div>');
+    parts.push('<div style="margin-top:10px;padding-top:10px;border-top:1px dashed #e0e8f0"><a href="'+confirmMailLink(s,r)+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#fff8e1;color:#92400e;border:1px solid #f59e0b;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:bold;text-decoration:none">Confirmer mon intervention</a></div>');
+    body=parts.join('');
   }
 
   let ft='';
