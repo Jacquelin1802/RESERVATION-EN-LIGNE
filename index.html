@@ -721,36 +721,33 @@ function openRes(slotId){
   setTimeout(()=>document.getElementById('m-prenom').focus(),50);
 }
 
+// Variable globale pour le statut
+let currentStatut = '';
+
 function setStatut(val) {
+  currentStatut = val;
   const btnB = document.getElementById('btn-benevole');
   const btnR = document.getElementById('btn-remunere');
+  if(!btnB || !btnR) return;
   if (val === 'benevole') {
     btnB.style.background='#dcfce7'; btnB.style.borderColor='#16a34a'; btnB.style.color='#16a34a';
     btnR.style.background='#fff'; btnR.style.borderColor='#d0d8e8'; btnR.style.color='#555';
-    note.style.display='none';
   } else {
     btnR.style.background='#fef3c7'; btnR.style.borderColor='#f59e0b'; btnR.style.color='#92400e';
     btnB.style.background='#fff'; btnB.style.borderColor='#d0d8e8'; btnB.style.color='#555';
   }
-  document.getElementById('btn-benevole').dataset.selected = (val==='benevole'?'1':'0');
-  document.getElementById('btn-remunere').dataset.selected = (val==='remunere'?'1':'0');
 }
 
 function getStatut() {
-  const btnR = document.getElementById('btn-remunere');
-  const btnB = document.getElementById('btn-benevole');
-  if (btnR && btnR.dataset.selected==='1') return 'remunere';
-  if (btnB && btnB.dataset.selected==='1') return 'benevole';
-  return '';
+  return currentStatut;
 }
 
 function resetStatut() {
+  currentStatut = '';
   const btnB = document.getElementById('btn-benevole');
   const btnR = document.getElementById('btn-remunere');
-  const note = document.getElementById('statut-note');
-  if(btnB){btnB.style.background='#fff';btnB.style.borderColor='#d0d8e8';btnB.style.color='#555';btnB.dataset.selected='0';}
-  if(btnR){btnR.style.background='#fff';btnR.style.borderColor='#d0d8e8';btnR.style.color='#555';btnR.dataset.selected='0';}
-
+  if(btnB){btnB.style.background='#fff';btnB.style.borderColor='#d0d8e8';btnB.style.color='#555';}
+  if(btnR){btnR.style.background='#fff';btnR.style.borderColor='#d0d8e8';btnR.style.color='#555';}
 }
 
 function closeModal(){document.getElementById('modal').style.display='none';currentSlotId=null;}
