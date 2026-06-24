@@ -210,6 +210,12 @@ body{font-family:Arial,sans-serif;background:#f0f4f8;min-height:100vh}
     </div>
 
    </div>
+   <div class="frow">
+    <label>🔐 Code PIN (4 chiffres) *</label>
+    <input type="password" id="m-pin" placeholder="Choisissez un code à 4 chiffres" maxlength="4" pattern="[0-9]{4}" inputmode="numeric"
+     style="letter-spacing:8px;font-size:18px;font-weight:bold;text-align:center">
+    <div style="font-size:10px;color:#888;margin-top:3px">⚠️ Notez bien ce code, il vous sera demandé pour modifier ou supprimer votre réservation.</div>
+   </div>
   </div>
   <div class="mft">
    <button class="btn-cancel" onclick="closeModal()">Annuler</button>
@@ -715,6 +721,7 @@ function openRes(slotId){
   resetStatut();
   // Pré-sélectionner si déjà renseigné
   if(ex.statut) setStatut(ex.statut);
+  document.getElementById('m-pin').value='';
   document.getElementById('modal').style.display='flex';
   setTimeout(()=>document.getElementById('m-prenom').focus(),50);
 }
@@ -757,13 +764,18 @@ async function confirmReservation(){
   const theme=(document.getElementById('m-theme').value||'').trim();
   const duree=(document.getElementById('m-duree').value||'').trim();
   const statut=getStatut();
+  const pin=(document.getElementById('m-pin').value||'').trim();
   if(!nom){showToast('⚠️ Votre nom est obligatoire.');return;}
   if(!theme){showToast('⚠️ Le thème est obligatoire.');return;}
   if(!duree){showToast('⚠️ Veuillez choisir une durée d\'intervention.');return;}
   if(!statut){showToast('⚠️ Veuillez choisir votre statut : Bénévole ou Rémunéré.');return;}
+  if(!pin||pin.length!==4||!/^[0-9]{4}$/.test(pin)){showToast('⚠️ Le code PIN doit contenir exactement 4 chiffres.');return;}
 
   const ex=reservations[currentSlotId];
   const me=getFullName().toLowerCase();
+  if(ex&&ex.pin&&ex.pin!==pin){
+    showToast('⛔ Code PIN incorrect. Vous ne pouvez pas modifier cette réservation.',4000);return;
+  }
   if(ex&&ex.nom.toLowerCase()!==me){
     showToast('⛔ Ce créneau est déjà pris par '+ex.nom+' !',4000);return;
   }
@@ -781,6 +793,7 @@ async function confirmReservation(){
     besoins:(document.getElementById('m-besoins').value||'').trim(),
     duree,
     statut,
+    pin:pin,
     ts:Date.now(),
     dateSlot: slot.date||''
   };
@@ -818,6 +831,12 @@ async function confirmReservation(){
 
 async function liberer(slotId){
   const s=ALL_SLOTS.find(x=>x.id===slotId)||{};
+  const r=reservations[slotId];
+  if(r&&r.pin){
+    const pinSaisi=prompt('🔐 Entrez votre code PIN pour libérer ce créneau :');
+    if(pinSaisi===null) return;
+    if(pinSaisi!==r.pin){showToast('⛔ Code PIN incorrect.',3000);return;}
+  }
   if(!confirm('Libérer votre réservation du '+s.date+' ?'))return;
   await apiPost('delete', slotId, {});
   renderAll();showToast('🔓 Créneau libéré.');
