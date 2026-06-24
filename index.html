@@ -154,13 +154,22 @@ body{font-family:Arial,sans-serif;background:#f0f4f8;min-height:100vh}
    <div id="a-vac-list"></div>
   </div>
   <div class="admin-card">
-   <h4>🏥 Périodes de stages</h4>
+   <h4>🏥 Stages 1DIET (Jeudis)</h4>
    <div style="display:flex;gap:6px;margin-bottom:6px">
-    <input class="admin-input" id="a-stage-debut" type="date" style="margin:0">
-    <input class="admin-input" id="a-stage-fin" type="date" style="margin:0">
-    <button onclick="addPeriod('stage')" style="background:#3b82f6;color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap">+ Ajouter</button>
+    <input class="admin-input" id="a-stage1-debut" type="date" style="margin:0">
+    <input class="admin-input" id="a-stage1-fin" type="date" style="margin:0">
+    <button onclick="addPeriod('stage1')" style="background:#3b82f6;color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap">+ Ajouter</button>
    </div>
-   <div id="a-stage-list"></div>
+   <div id="a-stage1-list"></div>
+  </div>
+  <div class="admin-card">
+   <h4>🏥 Stages 2DIET (Mercredis)</h4>
+   <div style="display:flex;gap:6px;margin-bottom:6px">
+    <input class="admin-input" id="a-stage2-debut" type="date" style="margin:0">
+    <input class="admin-input" id="a-stage2-fin" type="date" style="margin:0">
+    <button onclick="addPeriod('stage2')" style="background:#3b82f6;color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap">+ Ajouter</button>
+   </div>
+   <div id="a-stage2-list"></div>
   </div>
  </div>
  <div class="admin-actions">
@@ -935,7 +944,10 @@ let adminConfig = {
     {debut:'2027-02-15',fin:'2027-03-01'},
     {debut:'2027-04-12',fin:'2027-04-26'}
   ],
-  stages: [
+  stages1: [
+    {debut:'2027-02-01',fin:'2027-02-12'}
+  ],
+  stages2: [
     {debut:'2027-02-01',fin:'2027-02-12'}
   ]
 };
@@ -974,7 +986,8 @@ async function loadAdminConfig() {
   document.getElementById('a-2diet-debut').value = adminConfig.debut2diet||'';
   document.getElementById('a-2diet-fin').value = adminConfig.fin2diet||'';
   renderPeriodList('vac', adminConfig.vacances||[]);
-  renderPeriodList('stage', adminConfig.stages||[]);
+  renderPeriodList('stage1', adminConfig.stages1||[]);
+  renderPeriodList('stage2', adminConfig.stages2||[]);
 }
 
 function renderPeriodList(type, list) {
@@ -1005,7 +1018,7 @@ function addPeriod(type) {
   const fin = document.getElementById('a-'+type+'-fin').value;
   if(!debut||!fin){ showToast('⚠️ Saisissez les deux dates.',2500); return; }
   if(debut>fin){ showToast('⚠️ La date de début doit être avant la fin.',2500); return; }
-  const key = type==='vac' ? 'vacances' : 'stages';
+  const key = type==='vac' ? 'vacances' : (type==='stage1' ? 'stages1' : 'stages2');
   adminConfig[key] = adminConfig[key]||[];
   adminConfig[key].push({debut,fin});
   renderPeriodList(type, adminConfig[key]);
@@ -1014,7 +1027,7 @@ function addPeriod(type) {
 }
 
 function removePeriod(type, idx) {
-  const key = type==='vac' ? 'vacances' : 'stages';
+  const key = type==='vac' ? 'vacances' : (type==='stage1' ? 'stages1' : 'stages2');
   adminConfig[key].splice(idx,1);
   renderPeriodList(type, adminConfig[key]);
 }
@@ -1056,7 +1069,9 @@ function rebuildSlots() {
   const fin1 = adminConfig.fin1diet;
   const debut2 = adminConfig.debut2diet;
   const fin2 = adminConfig.fin2diet;
-  const excl = (adminConfig.vacances||[]).concat(adminConfig.stages||[]);
+  const exclCommun = adminConfig.vacances||[];
+  const excl1 = exclCommun.concat(adminConfig.stages1||[]);
+  const excl2 = exclCommun.concat(adminConfig.stages2||[]);
 
   // Générer les jeudis pour 1DIET
   let d = new Date(debut1+'T12:00:00');
@@ -1064,7 +1079,7 @@ function rebuildSlots() {
   while(true) {
     const iso = d.toISOString().slice(0,10);
     if(iso > fin1) break;
-    if(!isInPeriod(iso, excl) && !isJourFerie(iso)) {
+    if(!isInPeriod(iso, excl1) && !isJourFerie(iso)) {
       const dd = iso.slice(8)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4);
       ALL_SLOTS.push({
         id:'j'+iso.replace(/-/g,''),
@@ -1084,7 +1099,7 @@ function rebuildSlots() {
   while(true) {
     const iso = d.toISOString().slice(0,10);
     if(iso > fin2) break;
-    if(!isInPeriod(iso, excl) && !isJourFerie(iso)) {
+    if(!isInPeriod(iso, excl2) && !isJourFerie(iso)) {
       const dd = iso.slice(8)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4);
       ALL_SLOTS.push({
         id:'m'+iso.replace(/-/g,''),
