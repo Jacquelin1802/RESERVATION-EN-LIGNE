@@ -88,6 +88,25 @@ body{font-family:Arial,sans-serif;background:#f0f4f8;min-height:100vh}
 .btn-save{background:#1a3a6e;color:#fff;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:Arial;font-size:12px;font-weight:bold}
 .btn-save:hover{background:#2a5aae}
 .slot-info-box{background:#f0f6ff;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-family:Arial;font-size:12px;color:#1a3a6e;font-weight:bold;border-left:3px solid #2a5aae}
+/* Panneau Admin */
+.admin-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:5px 12px;border-radius:12px;cursor:pointer;font-family:Arial;font-size:11px;font-weight:bold;margin-left:8px}
+.admin-btn:hover{background:rgba(255,255,255,.25)}
+.admin-panel{display:none;background:#1a1a2e;color:#fff;padding:16px 20px;border-bottom:3px solid #f59e0b}
+.admin-panel h3{font-size:13px;font-weight:bold;color:#f59e0b;margin-bottom:12px}
+.admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:16px}
+.admin-card{background:rgba(255,255,255,.07);border-radius:10px;padding:16px 18px}
+.admin-card h4{font-size:12px;font-weight:bold;color:#93c5fd;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
+.admin-input{width:100%;padding:8px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;font-family:Arial;font-size:12px;margin-bottom:8px;outline:none;box-sizing:border-box}
+.admin-input:focus{border-color:#f59e0b}
+.admin-row{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.admin-row label{font-size:11px;color:#94a3b8;min-width:55px}
+.admin-period{background:rgba(255,255,255,.05);border-radius:6px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:11px}
+.admin-period span{color:#e2e8f0}
+.admin-period button{background:#dc2626;color:#fff;border:none;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:10px}
+.admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn-admin-save{background:#f59e0b;color:#1a1a2e;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:Arial;font-size:12px;font-weight:bold}
+.btn-admin-save:hover{background:#fbbf24}
+.btn-admin-close{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);padding:8px 18px;border-radius:8px;cursor:pointer;font-family:Arial;font-size:12px}
 /* Loader */
 .loader{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
 /* Toast */
@@ -105,8 +124,48 @@ body{font-family:Arial,sans-serif;background:#f0f4f8;min-height:100vh}
   <h1>Planning des Interventions — BTS Diététique 2026-2027</h1>
   <p>Réservation des créneaux d'intervenants extérieurs · Mise à jour automatique</p>
  </div>
- <div class="hdr-right">
+ <div class="hdr-right" style="display:flex;align-items:center;gap:8px">
+  <button class="admin-btn" onclick="openAdmin()">⚙️ Admin</button>
   <div class="sync-badge" id="sync-badge">🔄 Connexion…</div>
+ </div>
+</div>
+
+<!-- Panneau Admin -->
+<div class="admin-panel" id="admin-panel">
+ <h3>⚙️ Administration — Planning BTS Diététique</h3>
+ <div class="admin-grid">
+  <div class="admin-card">
+   <h4>📅 Année scolaire 1DIET (Jeudis)</h4>
+   <div class="admin-row"><label>Début</label><input class="admin-input" id="a-1diet-debut" type="date" placeholder="2026-09-17"></div>
+   <div class="admin-row"><label>Fin</label><input class="admin-input" id="a-1diet-fin" type="date" placeholder="2027-05-27"></div>
+  </div>
+  <div class="admin-card">
+   <h4>📅 Année scolaire 2DIET (Mercredis)</h4>
+   <div class="admin-row"><label>Début</label><input class="admin-input" id="a-2diet-debut" type="date" placeholder="2026-09-16"></div>
+   <div class="admin-row"><label>Fin</label><input class="admin-input" id="a-2diet-fin" type="date" placeholder="2027-05-12"></div>
+  </div>
+  <div class="admin-card">
+   <h4>🏖️ Vacances scolaires & Jours fériés</h4>
+   <div style="display:flex;gap:6px;margin-bottom:6px">
+    <input class="admin-input" id="a-vac-debut" type="date" style="margin:0">
+    <input class="admin-input" id="a-vac-fin" type="date" style="margin:0">
+    <button onclick="addPeriod('vac')" style="background:#3b82f6;color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap">+ Ajouter</button>
+   </div>
+   <div id="a-vac-list"></div>
+  </div>
+  <div class="admin-card">
+   <h4>🏥 Périodes de stages</h4>
+   <div style="display:flex;gap:6px;margin-bottom:6px">
+    <input class="admin-input" id="a-stage-debut" type="date" style="margin:0">
+    <input class="admin-input" id="a-stage-fin" type="date" style="margin:0">
+    <button onclick="addPeriod('stage')" style="background:#3b82f6;color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;white-space:nowrap">+ Ajouter</button>
+   </div>
+   <div id="a-stage-list"></div>
+  </div>
+ </div>
+ <div class="admin-actions">
+  <button class="btn-admin-save" onclick="saveAdminConfig()">💾 Enregistrer et recalculer le planning</button>
+  <button class="btn-admin-close" onclick="closeAdmin()">✕ Fermer</button>
  </div>
 </div>
 
@@ -248,7 +307,7 @@ const ADMIN_EMAIL = 'jacquelin.techer@ac-reunion.fr';
 //  - 1DIET : aucune date après le 27/05/2027
 //  - 1DIET : 20/05/2027 supprimé (Ascension)
 // ══════════════════════════════════════════════
-const ALL_SLOTS = [
+let ALL_SLOTS = [
   // ── 1DIET (Jeudis après-midi) ──
   {"id":"j20260917","date":"17/09/2026","dateISO":"2026-09-17","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
   {"id":"j20260924","date":"24/09/2026","dateISO":"2026-09-24","jour":"Jeudi","classe":"1DIET","creneau":"13h30 – 17h30"},
@@ -486,7 +545,17 @@ function loadLocal(){
 // ── Chargement initial + sync auto ──
 async function init(){
   setBadge('<span class="loader"></span> Chargement…','#fff');
-  reservations = await apiGet();
+  const allData = await apiGet();
+  if(allData) {
+    // Séparer config admin des réservations
+    if(allData['__admin_config__']) {
+      adminConfig = allData['__admin_config__'];
+      localStorage.setItem('bts_admin_config', JSON.stringify(adminConfig));
+      rebuildSlots();
+      delete allData['__admin_config__'];
+    }
+    reservations = allData;
+  }
   saveLocal();
   renderAll();
   setBadge(API_URL!=='VOTRE_URL_APPS_SCRIPT_ICI'?'✅ Connecté':'💾 Mode local (configuration requise)',
@@ -849,7 +918,203 @@ function showToast(msg,dur=2500){
 }
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
+// ══════════════════════════════════════════════
+//  ADMINISTRATION
+// ══════════════════════════════════════════════
+const ADMIN_PIN = '1802';
+
+// Config par défaut (année scolaire courante)
+let adminConfig = {
+  debut1diet: '2026-09-17',
+  fin1diet: '2027-05-27',
+  debut2diet: '2026-09-16',
+  fin2diet: '2027-05-12',
+  vacances: [
+    {debut:'2026-10-19',fin:'2026-11-02'},
+    {debut:'2026-12-20',fin:'2027-01-05'},
+    {debut:'2027-02-15',fin:'2027-03-01'},
+    {debut:'2027-04-12',fin:'2027-04-26'}
+  ],
+  stages: [
+    {debut:'2027-02-01',fin:'2027-02-12'}
+  ]
+};
+
+async function openAdmin() {
+  const pin = prompt('🔐 Code PIN administrateur :');
+  if(pin !== ADMIN_PIN) { showToast('⛔ Code PIN incorrect.',3000); return; }
+  showToast('⏳ Chargement de la configuration...', 1500);
+  await loadAdminConfig();
+  document.getElementById('admin-panel').style.display='block';
+  window.scrollTo(0,0);
+}
+
+function closeAdmin() {
+  document.getElementById('admin-panel').style.display='none';
+}
+
+async function loadAdminConfig() {
+  // Essayer de charger depuis le Sheet d'abord
+  try {
+    const remote = await apiGet();
+    if(remote && remote['__admin_config__']) {
+      adminConfig = remote['__admin_config__'];
+      localStorage.setItem('bts_admin_config', JSON.stringify(adminConfig));
+    } else {
+      // Fallback localStorage
+      const saved = localStorage.getItem('bts_admin_config');
+      if(saved) adminConfig = JSON.parse(saved);
+    }
+  } catch(e) {
+    const saved = localStorage.getItem('bts_admin_config');
+    if(saved) try { adminConfig = JSON.parse(saved); } catch(e2) {}
+  }
+  document.getElementById('a-1diet-debut').value = adminConfig.debut1diet||'';
+  document.getElementById('a-1diet-fin').value = adminConfig.fin1diet||'';
+  document.getElementById('a-2diet-debut').value = adminConfig.debut2diet||'';
+  document.getElementById('a-2diet-fin').value = adminConfig.fin2diet||'';
+  renderPeriodList('vac', adminConfig.vacances||[]);
+  renderPeriodList('stage', adminConfig.stages||[]);
+}
+
+function renderPeriodList(type, list) {
+  const div = document.getElementById('a-'+type+'-list');
+  if(!div) return;
+  if(!list||list.length===0) {
+    div.innerHTML='<div style="font-size:10px;color:#64748b;font-style:italic">Aucune période ajoutée</div>';
+    return;
+  }
+  div.innerHTML = '';
+  list.forEach(function(p, i) {
+    var row = document.createElement('div');
+    row.className = 'admin-period';
+    var span = document.createElement('span');
+    span.textContent = p.debut + ' → ' + p.fin;
+    var btn = document.createElement('button');
+    btn.textContent = '✕';
+    btn.style.cssText = 'background:#dc2626;color:#fff;border:none;padding:2px 8px;border-radius:4px;cursor:pointer;font-size:10px';
+    btn.addEventListener('click', (function(t,idx){ return function(){ removePeriod(t,idx); }; })(type, i));
+    row.appendChild(span);
+    row.appendChild(btn);
+    div.appendChild(row);
+  });
+}
+
+function addPeriod(type) {
+  const debut = document.getElementById('a-'+type+'-debut').value;
+  const fin = document.getElementById('a-'+type+'-fin').value;
+  if(!debut||!fin){ showToast('⚠️ Saisissez les deux dates.',2500); return; }
+  if(debut>fin){ showToast('⚠️ La date de début doit être avant la fin.',2500); return; }
+  const key = type==='vac' ? 'vacances' : 'stages';
+  adminConfig[key] = adminConfig[key]||[];
+  adminConfig[key].push({debut,fin});
+  renderPeriodList(type, adminConfig[key]);
+  document.getElementById('a-'+type+'-debut').value='';
+  document.getElementById('a-'+type+'-fin').value='';
+}
+
+function removePeriod(type, idx) {
+  const key = type==='vac' ? 'vacances' : 'stages';
+  adminConfig[key].splice(idx,1);
+  renderPeriodList(type, adminConfig[key]);
+}
+
+async function saveAdminConfig() {
+  adminConfig.debut1diet = document.getElementById('a-1diet-debut').value;
+  adminConfig.fin1diet = document.getElementById('a-1diet-fin').value;
+  adminConfig.debut2diet = document.getElementById('a-2diet-debut').value;
+  adminConfig.fin2diet = document.getElementById('a-2diet-fin').value;
+  // Sauvegarder localement
+  localStorage.setItem('bts_admin_config', JSON.stringify(adminConfig));
+  // Sauvegarder dans le Google Sheet
+  showToast('💾 Sauvegarde en cours...', 2000);
+  await apiPost('saveConfig', '__admin_config__', adminConfig);
+  rebuildSlots();
+  closeAdmin();
+  renderAll();
+  showToast('✅ Planning mis à jour et sauvegardé !', 3000);
+}
+
+function isInPeriod(dateISO, periods) {
+  return (periods||[]).some(p => dateISO >= p.debut && dateISO <= p.fin);
+}
+
+function isJourFerie(dateISO) {
+  // Jours fériés fixes
+  const feries = ['01-01','05-01','05-08','07-14','08-15','11-01','11-11','12-25'];
+  const mmdd = dateISO.slice(5);
+  if(feries.includes(mmdd)) return true;
+  // Lundi de Pâques et Ascension (calcul approché)
+  const d = new Date(dateISO+'T12:00:00');
+  return false;
+}
+
+function rebuildSlots() {
+  // Vider et reconstruire ALL_SLOTS
+  ALL_SLOTS.length = 0;
+  const debut1 = adminConfig.debut1diet;
+  const fin1 = adminConfig.fin1diet;
+  const debut2 = adminConfig.debut2diet;
+  const fin2 = adminConfig.fin2diet;
+  const excl = (adminConfig.vacances||[]).concat(adminConfig.stages||[]);
+
+  // Générer les jeudis pour 1DIET
+  let d = new Date(debut1+'T12:00:00');
+  while(d.getDay()!==4) d.setDate(d.getDate()+1); // aller au prochain jeudi
+  while(true) {
+    const iso = d.toISOString().slice(0,10);
+    if(iso > fin1) break;
+    if(!isInPeriod(iso, excl) && !isJourFerie(iso)) {
+      const dd = iso.slice(8)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4);
+      ALL_SLOTS.push({
+        id:'j'+iso.replace(/-/g,''),
+        date:dd,
+        dateISO:iso,
+        jour:'Jeudi',
+        classe:'1DIET',
+        creneau:'13h30 – 17h30'
+      });
+    }
+    d.setDate(d.getDate()+7);
+  }
+
+  // Générer les mercredis pour 2DIET
+  d = new Date(debut2+'T12:00:00');
+  while(d.getDay()!==3) d.setDate(d.getDate()+1); // aller au prochain mercredi
+  while(true) {
+    const iso = d.toISOString().slice(0,10);
+    if(iso > fin2) break;
+    if(!isInPeriod(iso, excl) && !isJourFerie(iso)) {
+      const dd = iso.slice(8)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4);
+      ALL_SLOTS.push({
+        id:'m'+iso.replace(/-/g,''),
+        date:dd,
+        dateISO:iso,
+        jour:'Mercredi',
+        classe:'2DIET',
+        creneau:'13h30 – 17h30'
+      });
+    }
+    d.setDate(d.getDate()+7);
+  }
+
+  // Trier par date
+  ALL_SLOTS.sort((a,b) => a.dateISO.localeCompare(b.dateISO));
+}
+
 // ── Démarrage ──
+async function loadConfigOnStart() {
+  try {
+    const remote = await apiGet();
+    if(remote && remote['__admin_config__']) {
+      adminConfig = remote['__admin_config__'];
+      localStorage.setItem('bts_admin_config', JSON.stringify(adminConfig));
+      rebuildSlots();
+      renderAll();
+    }
+  } catch(e) {}
+}
+
 init();
 </script>
 </body>
